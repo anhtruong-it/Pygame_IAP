@@ -1,19 +1,18 @@
 import pygame
-
+from objects import *
 vec = pygame.math.Vector2
 
-class Player():
+
+class Player:
     def __init__(self, pos, radius, color, wall):
         self.pos = pos
         self.radius = radius
         self.color = color
-        self.speed = 2
+        self.speed = 1
         self.wall = wall
-
 
     def update(self, key_pressed):
         new_pos = self.pos.copy()
-        #self.pos = new_pos
         old_pos = new_pos
         if key_pressed[pygame.K_UP]:
             old_pos[1] = new_pos[1]
@@ -38,6 +37,9 @@ class Player():
         return [new_pos, old_pos]
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, self.pos, self.radius)
+        result_collision = pygame.draw.circle(screen, self.color, self.pos, self.radius)
+        return result_collision
+
+
 
 
