@@ -1,6 +1,7 @@
 import pygame
 from player import *
 from objects import *
+from menu_game import *
 from math import *
 from pygame.mixer import Sound
 
@@ -21,6 +22,7 @@ class App:
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = "The first game"
+        self.state_app = "menu"
         self.background_color = (255, 255, 255)
         self.image_path = 'dolphin.jpg'
         self.circle = Player([100, 100], 50, (100, 100), (0, 255, 0), wall, self.image_path)
@@ -29,6 +31,7 @@ class App:
         pygame.time.set_timer(self.change_color_event, 1000)
         self.color_index = 0
         self.colors = [(0, 0, 255), (0, 200, 0)]
+        self.menu = Menu(width, height)
 
     def win_game(self):
         # notification of the first test
@@ -38,40 +41,55 @@ class App:
         text_rect.center = (width // 2, height // 2)
         self.screen.blit(text_surface, text_rect)
 
+
+
     def run(self):
         hit = 0
         while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
-                if event.type == self.change_color_event:
-                    self.color_index = (self.color_index + 1) % 2
-                    self.rect.color = self.colors[self.color_index]
+            if self.state_app == "menu":
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+                    if event.type == self.change_color_event:
+                        self.color_index = (self.color_index + 1) % 2
 
-            # clear the screen with the background color
-            self.screen.fill(self.background_color)
 
-            # draw circle
-            keys_pressed = pygame.key.get_pressed()
-            self.circle.update(keys_pressed,)
-            circle = self.circle.draw(self.screen)
+                self.menu.draw_menu()
+            else:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        quit()
+                    if event.type == self.change_color_event:
+                        self.color_index = (self.color_index + 1) % 2
+                        self.rect.color = self.colors[self.color_index]
 
-            # draw rect
-            self.rect.update(False)
-            rect = self.rect.draw(self.screen)[0]
+                # clear the screen with the background color
+                self.screen.fill(self.background_color)
 
-            # check circle hit rect
-            if circle.colliderect(rect) and hit < 5:
-                print("circle hit rect")
-                hit += 1
-                print(hit)
-                pygame.time.wait(100)
-                self.rect.update(True)
 
-            # display notification
-            if hit == 5:
-                self.win_game()
+
+                # draw circle
+                keys_pressed = pygame.key.get_pressed()
+                self.circle.update(keys_pressed,)
+                circle = self.circle.draw(self.screen)
+
+                # draw rect
+                self.rect.update(False)
+                rect = self.rect.draw(self.screen)[0]
+
+                # check circle hit rect
+                if circle.colliderect(rect) and hit < 5:
+                    print("circle hit rect")
+                    hit += 1
+                    print(hit)
+                    pygame.time.wait(100)
+                    self.rect.update(True)
+
+                # display notification
+                if hit == 5:
+                    self.win_game()
 
             # update the display
             pygame.display.update()
