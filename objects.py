@@ -37,3 +37,4 @@ class Objects:
         result_collision = pygame.draw.rect(screen, self.color, rect)
         return [result_collision, [rect.x, rect.y]]
 
+
