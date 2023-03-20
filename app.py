@@ -1,4 +1,6 @@
 import pygame
+import self as self
+
 from player import *
 from objects import *
 from menu_game import *
@@ -12,19 +14,22 @@ wall = ((0, 640), (0, 480))
 width = 640
 height = 480
 
-pygame.init()
+
 pygame.mixer.init()
 
 
 class App:
     def __init__(self):
+        pygame.init()
         self.screen = pygame.display.set_mode((width, height))
         self.caption = pygame.display.set_caption("The first test")
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = "The first game"
+        self.call_state = "menu"
+        #self.state_app = "menu"
         #self.state_app = "practice"
-        self.state_app = "LED"
+        #self.state_app = "LED"
         self.background_color = (255, 255, 255)
         self.image_path = 'dolphin.jpg'
         self.image_path_SWON = 'switch_ON.jpg'
@@ -41,7 +46,23 @@ class App:
         pygame.time.set_timer(self.change_color_event, 1000)
         self.color_index = 0
         self.colors = [(0, 0, 255), (0, 200, 0)]
-        self.menu = Menu(width, height)
+
+        self.button_width = 120
+        self.button_height = 50
+        self.button_padding = 20
+
+        button_name = ["Practice", "Games", "Basketball", "Water", "Feed", "LEDs", "Setting"]
+        button_x = 100
+        button_y = [50, 100, 150, 200, 250, 300, 350]
+        self.button_practice = Menu(button_x,button_y[0], self.button_width, self.button_height, button_name[0], self)
+        self.button_game = Menu(button_x, button_y[1], self.button_width, self.button_height, button_name[1], self)
+        self.button_basketball = Menu(button_x, button_y[2], self.button_width, self.button_height, button_name[2], self)
+        self.button_water = Menu(button_x,button_y[3], self.button_width, self.button_height, button_name[3], self)
+        self.button_feed = Menu(button_x, button_y[4], self.button_width, self.button_height, button_name[4], self)
+        self.button_LED = Menu(button_x, button_y[5], self.button_width, self.button_height, button_name[5], self)
+        self.button_setting = Menu(button_x, button_y[6], self.button_width, self.button_height, button_name[6], self)
+
+        self.button_return = Menu(0, 0, self.button_width, self.button_height, "menu", self)
 
     def win_game(self):
         # notification of the first test
@@ -56,7 +77,8 @@ class App:
     def run(self):
         hit = 0
         while self.running:
-            if self.state_app == "menu":
+
+            if self.call_state == "menu":
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -64,16 +86,27 @@ class App:
                     if event.type == self.change_color_event:
                         self.color_index = (self.color_index + 1) % 2
 
+                    a = self.button_practice.handle_event(event)
+                    b = self.button_game.handle_event(event)
+                    c = self.button_basketball.handle_event(event)
+                    d = self.button_water.handle_event(event)
+                    e = self.button_feed.handle_event(event)
+                    g = self.button_LED.handle_event(event)
+                    h = self.button_setting.handle_event(event)
 
-                button_practice = self.menu.draw_button(self.menu.menu_item_pos[0], self.menu.menu_items[0])
-                button_game = self.menu.draw_button(self.menu.menu_item_pos[1], self.menu.menu_items[1])
-                button_basketball = self.menu.draw_button(self.menu.menu_item_pos[2], self.menu.menu_items[2])
-                button_water = self.menu.draw_button(self.menu.menu_item_pos[3], self.menu.menu_items[3])
-                button_feed = self.menu.draw_button(self.menu.menu_item_pos[4], self.menu.menu_items[4])
-                button_LED = self.menu.draw_button(self.menu.menu_item_pos[5], self.menu.menu_items[5])
-                button_setting = self.menu.draw_button(self.menu.menu_item_pos[6], self.menu.menu_items[6])
+                # clear the screen with the background color
+                self.screen.fill((0, 0, 0))
 
-            elif self.state_app == "practice":
+                self.button_practice.draw_button(self.screen)
+                self.button_game.draw_button(self.screen)
+                self.button_basketball.draw_button(self.screen)
+                self.button_water.draw_button(self.screen)
+                self.button_feed.draw_button(self.screen)
+                self.button_LED.draw_button(self.screen)
+                self.button_setting.draw_button(self.screen)
+                pygame.display.update()
+
+            elif self.call_state == "Practice":
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -85,7 +118,11 @@ class App:
                 # clear the screen with the background color
                 self.screen.fill(self.background_color)
 
-
+                # draw return button
+                self.button_return.draw_button(self.screen)
+                a = self.button_return.handle_event(event)
+                if a == "menu":
+                    self.call_state = "menu"
 
                 # draw circle
                 keys_pressed = pygame.key.get_pressed()
@@ -107,8 +144,9 @@ class App:
                 # display notification
                 if hit == 5:
                     self.win_game()
+                pygame.display.update()
 
-            else:
+            elif self.call_state == "LEDs":
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -117,8 +155,14 @@ class App:
                         self.color_index = (self.color_index + 1) % 2
                         self.rect.color = self.colors[self.color_index]
 
-                    # clear the screen with the background color
+
+
+                # clear the screen with the background color
                 self.screen.fill(self.background_color)
+
+                # draw return button
+                self.button_return.draw_button(self.screen)
+                self.button_return.handle_event(event)
 
                 # draw circle
                 keys_pressed = pygame.key.get_pressed()
@@ -135,6 +179,27 @@ class App:
                     # draw switch ON
                     switch_ON = self.switch_OFF.draw_switch((self.screen))
                     LED_ON = self.LED_ON.draw_switch(self.screen)
+
+                pygame.display.update()
+
+            elif self.call_state == "Games":
+                pass
+                self.call_state = "menu"
+            elif self.call_state == "Basketball":
+                print("pass")
+                self.call_state = "menu"
+            elif self.call_state == "Water":
+                print("pass")
+                self.call_state = "menu"
+            elif self.call_state == "Feed":
+                print("pass")
+                self.call_state = "menu"
+            elif self.call_state == "Setting":
+                print("pass")
+                self.call_state = "menu"
+            else:
+                print("pass")
+                self.call_state = "menu"
 
             # update the display
             pygame.display.update()
