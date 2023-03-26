@@ -5,6 +5,7 @@ from objects import *
 from menu_game import *
 from switch import *
 from math import *
+#import RPi.GPIO as GPIO
 from pygame.mixer import Sound
 
 wall = ((0, 640), (0, 480))
@@ -192,6 +193,10 @@ class App:
 
         if circle.colliderect(switch_OFF):
             # draw switch ON
+            switch_ON = self.switch_ON.draw_switch(self.screen)
+            LED_ON = self.LED_ON.draw_switch(self.screen)
+
+        if self.circle.keys:
             switch_ON = self.switch_ON.draw_switch(self.screen)
             LED_ON = self.LED_ON.draw_switch(self.screen)
 

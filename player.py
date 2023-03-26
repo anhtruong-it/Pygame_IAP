@@ -23,6 +23,7 @@ class Player:
         self.image_rect.center = center
 
         self.free_move = True
+        self.keys = False
 
     def update(self, key_pressed):
         # moving circle by keyboard
@@ -61,6 +62,10 @@ class Player:
                     new_pos[0] = 205
                 else:
                     new_pos[0] += self.speed
+
+            # if key_pressed[pygame.K_RIGHT] or key_pressed[pygame.K_LEFT] or key_pressed[pygame.K_DOWN] or key_pressed[pygame.K_UP]:
+            #     self.keys = True
+
 
         if self.wall[0][0] + self.radius <= new_pos[0] <= self.wall[0][1] - self.radius and \
                 self.wall[1][0] + self.radius <= new_pos[1] <= self.wall[1][1] - self.radius:
