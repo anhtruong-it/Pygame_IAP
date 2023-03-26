@@ -27,8 +27,10 @@ class Menu:
                 self.surface = self.font.render(self.text, True, self.text_color)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.app.call_state = self.text
-                #print(self.app.state)
+                if self.text != "restart":
+                    self.app.call_state = self.text
+                else:
+                    self.app.call_in_game = self.text
 
 
 

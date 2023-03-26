@@ -20,6 +20,8 @@ class Player:
         self.image_rect = self.scaled_image_surface.get_rect()
         self.image_rect.center = center
 
+        self.restart = False
+
     def update(self, key_pressed):
         # moving circle by keyboard
         new_pos = self.pos.copy()
@@ -53,6 +55,9 @@ class Player:
         result_collision = pygame.draw.circle(screen, self.color, self.pos, self.radius)
         screen.blit(self.scaled_image_surface, self.image_rect)
         return result_collision
+
+    def restart_player(self):
+        self.pos = [100, 100]
 
 
 
