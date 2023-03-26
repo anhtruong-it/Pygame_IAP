@@ -116,6 +116,7 @@ class App:
         self.button_quit.draw_button(self.screen)
 
     def practice_event(self):
+        self.circle.free_move = True
         for event in pygame.event.get():
             self.button_return.handle_event(event)
             self.button_restart.handle_event(event)
@@ -141,11 +142,8 @@ class App:
         # draw rect
         self.rect.update(False)
         rect = self.rect.draw(self.screen)[0]
-
+        pygame.display.update()
         return [circle, rect]
-
-    def restart_player(self):
-        self.circle.restart_player()
 
     def hit(self, hit, circle, rect):
         if circle.colliderect(rect) and hit < 5:
@@ -158,6 +156,60 @@ class App:
 
         return hit
 
+    def hit_leds(self, circle, rect):
+        if circle.colliderect(rect):
+            print("circle hit LEDs")
+            self.circle.stop = True
+
+
+
+    def led_event(self):
+        self.circle.free_move = False
+        for event in pygame.event.get():
+            self.button_return.handle_event(event)
+            self.button_restart.handle_event(event)
+            event_quit(event)
+
+        # clear the screen with the background color
+        self.screen.fill(self.background_color)
+
+        # draw return button
+        self.button_return.draw_button(self.screen)
+
+        # draw restart button
+        self.button_restart.draw_button(self.screen)
+
+        # draw circle
+        keys_pressed = pygame.key.get_pressed()
+        self.circle.update(keys_pressed)
+        circle = self.circle.draw(self.screen)
+
+        # draw switch OFF
+        switch_OFF = self.switch_OFF.draw_switch(self.screen)
+
+        # draw LED OFF
+        LED_OFF = self.LED_OFF.draw_switch(self.screen)
+
+        if circle.colliderect(switch_OFF):
+            # draw switch ON
+            switch_ON = self.switch_ON.draw_switch(self.screen)
+            LED_ON = self.LED_ON.draw_switch(self.screen)
+
+        #self.hit_leds(circle, LED_OFF)
+
+        pygame.display.update()
+
+    def restart_event(self, hit):
+        hit = 0
+        self.call_in_game = ""
+        print("restart")
+        if self.call_state == "Practice":
+            self.circle.restart_default_player()
+        elif self.call_state == "LEDs":
+            self.circle.restart_random_player()
+            self.circle.stop = False
+        return hit
+
     def run(self):
         hit = 0
         while self.running:
@@ -167,44 +219,14 @@ class App:
 
             elif self.call_state == "Practice":
                 if self.call_in_game == "restart":
-                    hit = 0
-                    self.call_in_game = ""
-                    print("restart")
-                    self.restart_player()
-
+                    hit = self.restart_event(hit)
                 hits = self.practice_event()
                 hit = self.hit(hit, hits[0], hits[1])
-                pygame.display.update()
 
             elif self.call_state == "LEDs":
-                for event in pygame.event.get():
-                    self.button_return.handle_event(event)
-                    event_quit(event)
-
-                # clear the screen with the background color
-                self.screen.fill(self.background_color)
-
-                # draw return button
-                self.button_return.draw_button(self.screen)
-
-                # draw circle
-                keys_pressed = pygame.key.get_pressed()
-                self.circle.update(keys_pressed, )
-                circle = self.circle.draw(self.screen)
-
-                # draw switch OFF
-                switch_OFF = self.switch_OFF.draw_switch(self.screen)
-
-                # draw LED OFF
-                LED_OFF = self.LED_OFF.draw_switch(self.screen)
-
-                if circle.colliderect(switch_OFF):
-                    # draw switch ON
-                    switch_ON = self.switch_ON.draw_switch(self.screen)
-                    LED_ON = self.LED_ON.draw_switch(self.screen)
-
-                pygame.display.update()
-
+                if self.call_in_game == "restart":
+                    self.restart_event(hit)
+                self.led_event()
             elif self.call_state == "Games":
                 print("Games")
                 self.call_state = "menu"
