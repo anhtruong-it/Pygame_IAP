@@ -1,5 +1,4 @@
 import pygame
-import self as self
 
 from player import *
 from objects import *
@@ -34,8 +33,8 @@ class App:
         self.image_path = 'dolphin.jpg'
         self.image_path_SWON = 'switch_ON.jpg'
         self.image_path_SWOFF = 'switch_OFF.png'
-        self.image_path_LEDON = 'LED_ON.png'
-        self.image_path_LEDOFF = 'LED_OFF.jpg'
+        self.image_path_LEDOFF = 'LED_ON.jpg'
+        self.image_path_LEDON = 'LED_OFF.png'
         self.switch_ON = SwitchAndLEDs([500, 100], 50, (500, 100), (0, 255, 0), self.image_path_SWON)
         self.switch_OFF = SwitchAndLEDs([500, 100], 50, (500, 100), (0, 255, 0), self.image_path_SWOFF)
         self.LED_ON = SwitchAndLEDs([300, 300], 50, (300, 300), (0, 255, 0), self.image_path_LEDON)
@@ -157,6 +156,8 @@ class App:
 
 
 
+
+
                 # clear the screen with the background color
                 self.screen.fill(self.background_color)
 
@@ -164,21 +165,30 @@ class App:
                 self.button_return.draw_button(self.screen)
                 self.button_return.handle_event(event)
 
-                # draw circle
-                keys_pressed = pygame.key.get_pressed()
-                self.circle.update(keys_pressed, )
-                circle = self.circle.draw(self.screen)
-
-                # draw switch OFF
-                switch_OFF = self.switch_ON.draw_switch((self.screen))
-
-                # draw LED OFF
-                LED_OFF = self.LED_OFF.draw_switch(self.screen)
-
-                if circle.colliderect(switch_OFF):
-                    # draw switch ON
-                    switch_ON = self.switch_OFF.draw_switch((self.screen))
+                if event.type == pygame.KEYDOWN:
+                    print("any key pressed")
+                    switch_ON = self.switch_ON.draw_switch((self.screen))
                     LED_ON = self.LED_ON.draw_switch(self.screen)
+
+                else:
+
+                    # draw circle
+                    keys_pressed = pygame.key.get_pressed()
+                    self.circle.update(keys_pressed, )
+                    circle = self.circle.draw(self.screen)
+
+                    # draw switch OFF
+                    switch_OFF = self.switch_OFF.draw_switch((self.screen))
+
+                    # draw LED OFF
+                    LED_OFF = self.LED_OFF.draw_switch(self.screen)
+
+                    if circle.colliderect(switch_OFF):
+                        # draw switch ON
+                        switch_ON = self.switch_ON.draw_switch((self.screen))
+                        LED_ON = self.LED_ON.draw_switch(self.screen)
+
+
 
                 pygame.display.update()
 
