@@ -4,7 +4,7 @@ from player import *
 from objects import *
 from menu_game import *
 from switch import *
-#from memory_game import *
+from memory_game import *
 #import RPi.GPIO as GPIO
 
 from math import *
@@ -93,6 +93,9 @@ class App:
         # create start button
         self.button_start = Menu(300, 0, self.button_width, self.button_height, "start", self)
 
+        # create button move ball
+        self.button_move_ball = Menu(450, 0, self.button_width, self.button_height, "move", self)
+
         # create memory game components
         self.image_path_cup = 'cups.jpeg'
         self.image_path_ball = 'ball.jpeg'
@@ -130,6 +133,7 @@ class App:
     #
     # def button_released(self, channel):
     #     GPIO.output(self.led_pin2, GPIO.LOW)
+
 
     def win_practice_game(self):
         # notification of the first test
@@ -263,15 +267,20 @@ class App:
             self.circle.restart_random_player()
             self.circle.stop = False
         elif self.call_state == "Memory Game":
-            self.ball.update_ball(True)
+            self.playing = False
         return hit
 
+    def move_ball(self):
+        self.call_in_game = ""
+        print("ball moved")
+        self.ball.update_ball(True)
 
     def cup_draw(self):
         for event in pygame.event.get():
             self.button_return.handle_event(event)
             self.button_restart.handle_event(event)
             self.button_start.handle_event(event)
+            self.button_move_ball.handle_event(event)
             event_quit(event)
 
         # clear the screen with the background color
@@ -285,6 +294,9 @@ class App:
 
         # draw start button
         self.button_start.draw_button(self.screen)
+
+        # draw move ball button
+        self.button_move_ball.draw_button(self.screen)
 
         # draw ball
         self.ball.update_ball(False)
@@ -326,8 +338,9 @@ class App:
                 if self.call_in_game == "start":
                     self.playing = True
                 if self.call_in_game == "restart":
-                    self.playing = False
                     self.restart_event(0)
+                if self.call_in_game == "move":
+                    self.move_ball()
                     print([self.ball.pos, self.ball.center, self.ball.image_rect.center])
 
                 self.cup_draw()
