@@ -4,7 +4,7 @@ from player import *
 from objects import *
 from menu_game import *
 from switch import *
-#from memory_game import *
+from memory_game import *
 #import RPi.GPIO as GPIO
 
 from math import *
