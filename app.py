@@ -4,6 +4,7 @@ from player import *
 from objects import *
 from menu_game import *
 from switch import *
+from memory_game import *
 #import RPi.GPIO as GPIO
 
 from math import *
@@ -15,6 +16,11 @@ wall = ((0, 640), (0, 480))
 # pre defined
 width = 640
 height = 480
+
+# cups position in memory game
+origin_y = 150
+playing_y = 300
+
 
 pygame.mixer.init()
 
@@ -36,6 +42,7 @@ class App:
         self.state = "The first game"
         self.call_state = "menu"
         self.call_in_game = ""
+        self.playing = False
 
         # create switches on LEDs menu
         self.image_path = 'dolphin.jpg'
@@ -61,7 +68,7 @@ class App:
         self.colors = [(0, 0, 255), (0, 200, 0)]
 
         # create menu list
-        button_name = ["Practice", "Games", "Basketball", "Water", "Feed", "LEDs", "Setting", "Quit"]
+        button_name = ["Practice", "Memory Game", "Basketball", "Water", "Feed", "LEDs", "Setting", "Quit"]
         button_x = 100
         button_y = [50, 100, 150, 200, 250, 300, 350, 400]
         self.button_width = 120
@@ -83,8 +90,29 @@ class App:
         # create restart button
         self.button_restart = Menu(150, 0, self.button_width, self.button_height, "restart", self)
 
+        # create start button
+        self.button_start = Menu(300, 0, self.button_width, self.button_height, "start", self)
+
+        # create memory game components
+        self.image_path_cup = 'cups.jpeg'
+        self.image_path_ball = 'ball.jpeg'
+
+        # create origin cups
+        self.origin_cup1 = MemoryGame([300, origin_y], 75, (300, origin_y), (0, 255, 0), self.image_path_cup)
+        self.origin_cup2 = MemoryGame([100, origin_y], 75, (100, origin_y), (0, 255, 0), self.image_path_cup)
+        self.origin_cup3 = MemoryGame([500, origin_y], 75, (500, origin_y), (0, 255, 0), self.image_path_cup)
+
+        # create playing cup
+        self.playing_cup1 = MemoryGame([300, playing_y], 75, (300, playing_y), (0, 255, 0), self.image_path_cup)
+        self.playing_cup2 = MemoryGame([100, playing_y], 75, (100, playing_y), (0, 255, 0), self.image_path_cup)
+        self.playing_cup3 = MemoryGame([500, playing_y], 75, (500, playing_y), (0, 255, 0), self.image_path_cup)
+
+        # create ball
+        self.ball = MemoryGame([300, playing_y], 50, (300, playing_y), (0, 255, 0), self.image_path_ball)
+
+
         # # set up GPIO pin for LED in LEDs section
-        # self.led_pin = 18
+        # self.led_pin = 17
         # GPIO.setmode(GPIO.BCM)
         # GPIO.setup(self.led_pin, GPIO.out)
         # GPIO.output(self.led_pin, GPIO.LOW)
@@ -184,7 +212,6 @@ class App:
             print("circle hit LEDs")
             self.circle.stop = True
 
-
     def led_event(self):
         self.circle.free_move = False
         for event in pygame.event.get():
@@ -220,7 +247,7 @@ class App:
         if self.circle.keys:
             switch_ON = self.switch_ON.draw_switch(self.screen)
             LED_ON = self.LED_ON.draw_switch(self.screen)
-            GPIO.output(self.led_pin, GPIO.HIGH)
+            #GPIO.output(self.led_pin, GPIO.HIGH)
 
         #self.hit_leds(circle, LED_OFF)
 
@@ -235,7 +262,45 @@ class App:
         elif self.call_state == "LEDs":
             self.circle.restart_random_player()
             self.circle.stop = False
+        elif self.call_state == "Memory Game":
+            self.ball.update_ball(True)
         return hit
+
+
+    def cup_draw(self):
+        for event in pygame.event.get():
+            self.button_return.handle_event(event)
+            self.button_restart.handle_event(event)
+            self.button_start.handle_event(event)
+            event_quit(event)
+
+        # clear the screen with the background color
+        self.screen.fill(self.background_color)
+
+        # draw return button
+        self.button_return.draw_button(self.screen)
+
+        # draw restart button
+        self.button_restart.draw_button(self.screen)
+
+        # draw start button
+        self.button_start.draw_button(self.screen)
+
+        # draw ball
+        self.ball.update_ball(False)
+        self.ball.draw_cup_ball(self.screen)
+
+        # draw cups
+        if not self.playing:
+            self.origin_cup1.draw_cup_ball(self.screen)
+            self.origin_cup2.draw_cup_ball(self.screen)
+            self.origin_cup3.draw_cup_ball(self.screen)
+        else:
+            self.playing_cup1.draw_cup_ball(self.screen)
+            self.playing_cup2.draw_cup_ball(self.screen)
+            self.playing_cup3.draw_cup_ball(self.screen)
+
+
 
     def run(self):
         #GPIO.add_event_detec(self.button_pin, GPIO.FALLING, callback=self.button_pressed, bouncetime=300)
@@ -257,9 +322,15 @@ class App:
                 if self.call_in_game == "restart":
                     self.restart_event(hit)
                 self.led_event()
-            elif self.call_state == "Games":
-                print("Games")
-                self.call_state = "menu"
+            elif self.call_state == "Memory Game":
+                if self.call_in_game == "start":
+                    self.playing = True
+                if self.call_in_game == "restart":
+                    self.playing = False
+                    self.restart_event(0)
+                    print([self.ball.pos, self.ball.center, self.ball.image_rect.center])
+
+                self.cup_draw()
             elif self.call_state == "Basketball":
                 print("Basketball")
                 self.call_state = "menu"
