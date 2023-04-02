@@ -233,6 +233,7 @@ class App:
 
         # Set up GPIO pins for output
         GPIO.setup(18, GPIO.OUT)
+        GPIO.setup(25, GPIO.IN)
 
         # Set the output value to high (0.0V)
         GPIO.output(18, GPIO.LOW)
@@ -241,6 +242,10 @@ class App:
             # draw switch ON
             switch_ON = self.switch_ON.draw_switch(self.screen)
             LED_ON = self.LED_ON.draw_switch(self.screen)
+            # Set the output value to high (3.3V)
+            GPIO.output(18, GPIO.HIGH)
+
+        if GPIO.input(25) == GPIO.HIGH:
             # Set the output value to high (3.3V)
             GPIO.output(18, GPIO.HIGH)
 
