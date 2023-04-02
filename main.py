@@ -1,30 +1,55 @@
 import pygame
 
+# Initialize Pygame
 pygame.init()
 
-# set the window size
-width = 640
-height = 480
-size = (width, height)
+# Set the dimensions of the screen
+SCREEN_WIDTH = 500
+SCREEN_HEIGHT = 500
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-# create a window
-screen = pygame.display.set_mode(size)
+# Set the title of the window
+pygame.display.set_caption("Moving Circle")
 
-# set the window title
-pygame.display.set_caption("The first test")
+# Set the initial position and radius of the circle
+circle_x = SCREEN_WIDTH // 2
+circle_y = SCREEN_HEIGHT // 2
+circle_radius = 20
 
-# set the background color
-background_color = (255, 255, 255)
+# Set the speed at which the circle moves
+circle_speed = 1
 
-# run the game loop
-while True:
+# Define colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Main game loop
+running = True
+while running:
+    # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
+            running = False
 
-    # clear the screen with the background color
-    screen.fill(background_color)
+    # Move the circle based on keyboard input
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        circle_x -= circle_speed
+    elif keys[pygame.K_RIGHT]:
+        circle_x += circle_speed
+    elif keys[pygame.K_UP]:
+        circle_y -= circle_speed
+    elif keys[pygame.K_DOWN]:
+        circle_y += circle_speed
 
-    # update the display
+    # Fill the screen with black
+    screen.fill(BLACK)
+
+    # Draw the circle on the screen
+    pygame.draw.circle(screen, WHITE, (circle_x, circle_y), circle_radius)
+
+    # Update the screen
     pygame.display.update()
+
+# Quit Pygame
+pygame.quit()

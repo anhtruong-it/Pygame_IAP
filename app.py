@@ -5,11 +5,10 @@ from objects import *
 from menu_game import *
 from switch import *
 from memory_game import *
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import pigpio
 
 from math import *
-#import RPi.GPIO as GPIO
 from pygame.mixer import Sound
 
 wall = ((0, 640), (0, 480))
@@ -114,25 +113,25 @@ class App:
         # create ball
         self.ball = MemoryGame([300, playing_y], 50, (300, playing_y), (0, 255, 0), self.image_path_ball)
 
-        # set up GPIO pin for LED in LEDs section
-        self.led_pin = 17
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.led_pin, GPIO.OUT)
-        GPIO.output(self.led_pin, GPIO.LOW)
+        # # set up GPIO pin for LED in LEDs section
+        # self.led_pin = 18
+        # GPIO.setmode(GPIO.BCM)
+        # GPIO.setup(self.led_pin, GPIO.OUT)
+        # GPIO.output(self.led_pin, GPIO.LOW)
 
-        # set up GPIO pin for LED
-        self.button_pin = 17
-        self.led_pin2 = 16
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(self.button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(self.led_pin2, GPIO.OUT)
-        GPIO.output(self.led_pin2, GPIO.LOW)
+        # # set up GPIO pin for LED
+        # self.button_pin = 15
+        # self.led_pin2 = 18
+        # GPIO.setmode(GPIO.BCM)
+        # GPIO.setup(self.button_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        # GPIO.setup(self.led_pin2, GPIO.OUT)
+        # GPIO.output(self.led_pin2, GPIO.LOW)
 
-    def button_pressed(self, channel):
-        GPIO.output(self.led_pin2, GPIO.HIGH)
+    # def button_pressed(self, channel):
+        # GPIO.output(self.led_pin2, GPIO.HIGH)
 
-    def button_released(self, channel):
-        GPIO.output(self.led_pin2, GPIO.LOW)
+    # def button_released(self, channel):
+        # GPIO.output(self.led_pin2, GPIO.LOW)
 
     def win_practice_game(self):
         # notification of the first test
@@ -189,8 +188,8 @@ class App:
         self.button_restart.draw_button(self.screen)
 
         # draw circle
-        keys_pressed = pygame.key.get_pressed()
-        self.circle.update(keys_pressed)
+        #keys_pressed = pygame.key.get_pressed()
+        self.circle.update()
         circle = self.circle.draw(self.screen)
 
         # draw rect
@@ -232,8 +231,8 @@ class App:
         self.button_restart.draw_button(self.screen)
 
         # draw circle
-        keys_pressed = pygame.key.get_pressed()
-        self.circle.update(keys_pressed)
+        #keys_pressed = pygame.key.get_pressed()
+        self.circle.update()
         circle = self.circle.draw(self.screen)
 
         # draw switch OFF
@@ -250,7 +249,7 @@ class App:
         if self.circle.keys:
             switch_ON = self.switch_ON.draw_switch(self.screen)
             LED_ON = self.LED_ON.draw_switch(self.screen)
-            GPIO.output(self.led_pin, GPIO.HIGH)
+            #GPIO.output(self.led_pin, GPIO.HIGH)
 
         self.hit_leds(circle, LED_OFF)
 
@@ -357,6 +356,7 @@ class App:
                 self.call_state = "menu"
             else:
                 print("quit")
+                GPIO.cleanup()
                 self.running = False
 
             # update the display
