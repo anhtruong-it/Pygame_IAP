@@ -12,7 +12,7 @@ class Menu:
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.font = pygame.font.Font(None, 50)
-        self.text_color = (0, 255, 0)
+        self.text_color = (0, 0, 0)
         self.hover_color = (0, 0, 255)
         self.surface = self.font.render(self.text, True, self.text_color)
         self.app = app

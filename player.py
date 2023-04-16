@@ -17,7 +17,9 @@ class Player:
 
         # add image to circle
         self.image_path = image_path
-        self.image_surface = pygame.image.load(image_path)
+        self.image = pygame.image.load(image_path)
+        self.image_surface = self.image.convert_alpha()
+        self.image_surface.fill((0, 0, 0, 0))
         self.scaled_image_surface = pygame.transform.scale(self.image_surface, (radius * 2, radius * 2))
         self.image_rect = self.scaled_image_surface.get_rect()
         self.image_rect.center = center

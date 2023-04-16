@@ -36,6 +36,10 @@ class App:
         self.screen = pygame.display.set_mode((width, height))
         self.caption = pygame.display.set_caption("The first test")
         self.background_color = (255, 255, 255)
+        self.background_image = pygame.image.load("background.jpg").convert()
+        self.background_image = pygame.transform.scale(self.background_image, (width, height))
+        self.background_image_practice = pygame.image.load("practice_background.jpg").convert()
+        self.background_image_practice = pygame.transform.scale(self.background_image_practice, (width, height))
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = "The first game"
@@ -44,7 +48,7 @@ class App:
         self.playing = False
 
         # create switches on LEDs menu
-        self.image_path = 'dolphin.jpg'
+        self.image_path = 'practice_ball.jpg'
         self.image_path_SWON = 'switch_ON.jpg'
         self.image_path_SWOFF = 'switch_OFF.png'
         self.image_path_LEDOFF = 'LED_ON.jpg'
@@ -57,7 +61,7 @@ class App:
         # create circle and rect items
         self.player_x = 100
         self.player_y = 100
-        self.circle = Player([self.player_x, self.player_y], 50, (100, 100), (0, 255, 0), wall, self.image_path)
+        self.circle = Player([self.player_x, self.player_y], 50, (100, 100), (0, 0, 0), wall, self.image_path)
         self.rect = Objects([250, 300], (100, 100), (0, 0, 255), wall)
 
         # set changed color in rect item
@@ -144,6 +148,7 @@ class App:
 
         # clear the screen with the background color
         self.screen.fill((0, 0, 0))
+        self.screen.blit(self.background_image, (0,0))
 
         # draw menu buttons
         self.button_practice.draw_button(self.screen)
@@ -167,6 +172,7 @@ class App:
 
         # clear the screen with the background color
         self.screen.fill(self.background_color)
+        self.screen.blit(self.background_image_practice, (0, 0))
 
         # draw return button
         self.button_return.draw_button(self.screen)
