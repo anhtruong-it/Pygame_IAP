@@ -5,8 +5,10 @@ from objects import *
 from menu_game import *
 from switch import *
 from memory_game import *
-import RPi.GPIO as GPIO
-import pigpio
+#import RPi.GPIO as GPIO
+#import pigpio
+import time
+
 
 from math import *
 from pygame.mixer import Sound
@@ -43,9 +45,11 @@ class App:
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = "The first game"
+        self.state_memory = 1
         self.call_state = "menu"
         self.call_in_game = ""
         self.playing = False
+        self.light_state = 0
 
         # create switches on LEDs menu
         self.image_path = 'practice_ball.jpg'
@@ -53,10 +57,26 @@ class App:
         self.image_path_SWOFF = 'switch_OFF.png'
         self.image_path_LEDOFF = 'LED_ON.jpg'
         self.image_path_LEDON = 'LED_OFF.png'
+        self.LED_ON_memory = 'LED_OFF.png'
+        self.LED_OFF_memory = 'LED_ON.jpg'
+        self.LEDs = self.LED_ON_memory
         self.switch_ON = SwitchAndLEDs([500, 100], 50, (500, 100), (0, 255, 0), self.image_path_SWON)
         self.switch_OFF = SwitchAndLEDs([500, 100], 50, (500, 100), (0, 255, 0), self.image_path_SWOFF)
         self.LED_ON = SwitchAndLEDs([300, 300], 50, (300, 300), (0, 255, 0), self.image_path_LEDON)
         self.LED_OFF = SwitchAndLEDs([300, 300], 50, (300, 300), (0, 255, 0), self.image_path_LEDOFF)
+
+        # create LEDs on memory game section
+        self.playing_memory = True
+        self.playing_memory_level = 0
+        self.LED_ON1 = SwitchAndLEDs([75, 300], 50, (75, 300), (0, 255, 0), self.LEDs)
+        self.LED_ON2 = SwitchAndLEDs([200, 300], 50, (200, 300), (0, 255, 0), self.LEDs)
+        self.LED_ON3 = SwitchAndLEDs([350, 300], 50, (350, 300), (0, 255, 0), self.LEDs)
+        self.LED_ON4 = SwitchAndLEDs([500, 300], 50, (500, 300), (0, 255, 0), self.LEDs)
+
+        self.LED_OFF1 = SwitchAndLEDs([75, 300], 50, (75, 300), (0, 255, 0), self.image_path_LEDOFF)
+        self.LED_OFF2 = SwitchAndLEDs([200, 300], 50, (200, 300), (0, 255, 0), self.image_path_LEDOFF)
+        self.LED_OFF3 = SwitchAndLEDs([350, 300], 50, (350, 300), (0, 255, 0), self.image_path_LEDOFF)
+        self.LED_OFF4 = SwitchAndLEDs([500, 300], 50, (500, 300), (0, 255, 0), self.image_path_LEDOFF)
 
         # create circle and rect items
         self.player_x = 100
@@ -96,8 +116,19 @@ class App:
         # create start button
         self.button_start = Menu(300, 0, self.button_width, self.button_height, "start", self)
 
+        # create next level button
+        self.button_next = Menu(420, 0, self.button_width, self.button_height, "next", self)
+
+        # create back level button
+        self.button_back = Menu(520, 0, self.button_width, self.button_height, "back", self)
+
+        # create light-up button
+        self.button_light = Menu(100, 400, self.button_width, self.button_height, "light", self)
+
         # create button move ball
-        self.button_move_ball = Menu(450, 0, self.button_width, self.button_height, "move", self)
+        #self.button_move_ball = Menu(450, 0, self.button_width, self.button_height, "move", self)
+
+
 
         # create memory game components
         self.image_path_cup = 'cups.jpeg'
@@ -108,7 +139,7 @@ class App:
         self.origin_cup2 = MemoryGame([100, origin_y], 75, (100, origin_y), (0, 255, 0), self.image_path_cup)
         self.origin_cup3 = MemoryGame([500, origin_y], 75, (500, origin_y), (0, 255, 0), self.image_path_cup)
 
-        # create playing cup
+        # create a playing cup
         self.playing_cup1 = MemoryGame([300, playing_y], 75, (300, playing_y), (0, 255, 0), self.image_path_cup)
         self.playing_cup2 = MemoryGame([100, playing_y], 75, (100, playing_y), (0, 255, 0), self.image_path_cup)
         self.playing_cup3 = MemoryGame([500, playing_y], 75, (500, playing_y), (0, 255, 0), self.image_path_cup)
@@ -181,8 +212,8 @@ class App:
         self.button_restart.draw_button(self.screen)
 
         # draw circle
-        # keys_pressed = pygame.key.get_pressed()
-        self.circle.update()
+        keys_pressed = pygame.key.get_pressed()
+        self.circle.update(keys_pressed)
         circle = self.circle.draw(self.screen)
 
         # draw rect
@@ -224,8 +255,8 @@ class App:
         self.button_restart.draw_button(self.screen)
 
         # draw circle
-        # keys_pressed = pygame.key.get_pressed()
-        self.circle.update()
+        keys_pressed = pygame.key.get_pressed()
+        self.circle.update(keys_pressed)
         circle = self.circle.draw(self.screen)
 
         # draw switch OFF
@@ -235,25 +266,25 @@ class App:
         LED_OFF = self.LED_OFF.draw_switch(self.screen)
 
         # Set pin numbering mode to BCM
-        GPIO.setmode(GPIO.BCM)
+        #GPIO.setmode(GPIO.BCM)
 
         # Set up GPIO pins for output
-        GPIO.setup(18, GPIO.OUT)
-        GPIO.setup(25, GPIO.IN)
+        #GPIO.setup(18, GPIO.OUT)
+        #GPIO.setup(25, GPIO.IN)
 
         # Set the output value to high (0.0V)
-        GPIO.output(18, GPIO.LOW)
+        #GPIO.output(18, GPIO.LOW)
 
         if circle.colliderect(switch_OFF):
             # draw switch ON
             switch_ON = self.switch_ON.draw_switch(self.screen)
             LED_ON = self.LED_ON.draw_switch(self.screen)
             # Set the output value to high (3.3V)
-            GPIO.output(18, GPIO.HIGH)
+           #GPIO.output(18, GPIO.HIGH)
 
-        if GPIO.input(25) == GPIO.HIGH:
-            # Set the output value to high (3.3V)
-            GPIO.output(18, GPIO.HIGH)
+        # if GPIO.input(25) == GPIO.HIGH:
+        #     # Set the output value to high (3.3V)
+        #     #GPIO.output(18, GPIO.HIGH)
 
         if self.circle.keys:
             switch_ON = self.switch_ON.draw_switch(self.screen)
@@ -274,7 +305,17 @@ class App:
             self.circle.restart_random_player()
             self.circle.stop = False
         elif self.call_state == "Memory Game":
-            self.playing = False
+            if self.playing_memory_level == 0:
+                print("restart led off")
+                self.playing_memory = True
+            elif self.playing_memory_level == 1:
+                print("restart led on")
+                self.playing_memory = True
+            elif self.playing_memory_level == 2:
+                print("restart led on")
+                self.playing_memory = False
+                self.light_state = 0
+            #self.playing = False
         return hit
 
     def move_ball(self):
@@ -282,42 +323,162 @@ class App:
         print("ball moved")
         self.ball.update_ball(True)
 
+    def change_leds(self):
+        self.call_in_game = ""
+        print("changed")
+        if self.playing_memory_level == 0:
+            self.playing_memory = False
+        elif self.playing_memory_level == 1:
+            self.playing_memory = False
+        elif self.playing_memory_level == 2:
+            self.playing_memory = True
+
+
+
     def cup_draw(self):
-        for event in pygame.event.get():
-            self.button_return.handle_event(event)
-            self.button_restart.handle_event(event)
-            self.button_start.handle_event(event)
-            self.button_move_ball.handle_event(event)
-            event_quit(event)
+        count_time = 0
+        if self.state_memory != 1:
+            for event in pygame.event.get():
+                self.button_return.handle_event(event)
+                self.button_restart.handle_event(event)
+                self.button_start.handle_event(event)
+                #self.button_move_ball.handle_event(event)
+                event_quit(event)
 
-        # clear the screen with the background color
-        self.screen.fill(self.background_color)
+            # clear the screen with the background color
+            self.screen.fill(self.background_color)
 
-        # draw return button
-        self.button_return.draw_button(self.screen)
+            # draw return button
+            self.button_return.draw_button(self.screen)
 
-        # draw restart button
-        self.button_restart.draw_button(self.screen)
+            # draw restart button
+            self.button_restart.draw_button(self.screen)
 
-        # draw start button
-        self.button_start.draw_button(self.screen)
+            # draw start button
+            self.button_start.draw_button(self.screen)
 
-        # draw move ball button
-        self.button_move_ball.draw_button(self.screen)
+            # draw move ball button
+            #self.button_move_ball.draw_button(self.screen)
 
-        # draw ball
-        self.ball.update_ball(False)
-        self.ball.draw_cup_ball(self.screen)
+            # draw ball
+            self.ball.update_ball(False)
+            self.ball.draw_cup_ball(self.screen)
 
-        # draw cups
-        if not self.playing:
-            self.origin_cup1.draw_cup_ball(self.screen)
-            self.origin_cup2.draw_cup_ball(self.screen)
-            self.origin_cup3.draw_cup_ball(self.screen)
-        else:
-            self.playing_cup1.draw_cup_ball(self.screen)
-            self.playing_cup2.draw_cup_ball(self.screen)
-            self.playing_cup3.draw_cup_ball(self.screen)
+            # draw cups
+            list_origin_cup = ["", "", ""]
+            list_playing_cup = ["", "", ""]
+            if not self.playing:
+                list_origin_cup[0] = self.origin_cup1.draw_cup_ball(self.screen)
+                list_origin_cup[1] = self.origin_cup2.draw_cup_ball(self.screen)
+                list_origin_cup[2] = self.origin_cup3.draw_cup_ball(self.screen)
+            else:
+                list_playing_cup[0] = self.playing_cup1.draw_cup_ball(self.screen)
+                list_playing_cup[1] = self.playing_cup2.draw_cup_ball(self.screen)
+                list_playing_cup[2] = self.playing_cup3.draw_cup_ball(self.screen)
+            a = 1
+            #a = 0
+            # chose a cup
+            if a == 1:
+                self.origin_cup2.draw_cup_ball(self.screen)
+                list_playing_cup[1] = ""
+        elif self.state_memory == 1:
+            for event in pygame.event.get():
+                self.button_return.handle_event(event)
+                self.button_restart.handle_event(event)
+                self.button_start.handle_event(event)
+                self.button_next.handle_event(event)
+                self.button_back.handle_event(event)
+                self.button_light.handle_event(event)
+                event_quit(event)
+
+            # clear the screen with the background color
+            self.screen.fill(self.background_color)
+
+            # draw return button
+            self.button_return.draw_button(self.screen)
+
+            # draw restart button
+            self.button_restart.draw_button(self.screen)
+
+            # draw start button
+            self.button_start.draw_button(self.screen)
+
+            # draw the next button
+            self.button_next.draw_button(self.screen)
+
+            if self.playing_memory_level == 0:
+                if self.playing_memory:
+                    # draw LEDS
+                    self.LED_OFF1.draw_switch(self.screen)
+                    self.LED_OFF2.draw_switch(self.screen)
+                    self.LED_OFF3.draw_switch(self.screen)
+                    self.LED_OFF4.draw_switch(self.screen)
+                else:
+                    self.LED_ON1.draw_switch(self.screen)
+                    self.LED_ON2.draw_switch(self.screen)
+                    self.LED_ON3.draw_switch(self.screen)
+                    self.LED_ON4.draw_switch(self.screen)
+
+            elif self.playing_memory_level == 1:
+                # draw back button
+                self.button_back.draw_button(self.screen)
+                if self.playing_memory:
+                    # draw LEDS
+                    self.LED_ON1.draw_switch(self.screen)
+                    self.LED_ON2.draw_switch(self.screen)
+                    self.LED_ON3.draw_switch(self.screen)
+                    self.LED_ON4.draw_switch(self.screen)
+                else:
+                    self.LED_OFF1.draw_switch(self.screen)
+                    self.LED_OFF2.draw_switch(self.screen)
+                    self.LED_OFF3.draw_switch(self.screen)
+                    self.LED_OFF4.draw_switch(self.screen)
+
+            elif self.playing_memory_level == 2:
+
+                # draw back button
+                self.button_back.draw_button(self.screen)
+
+                # draw light-up button
+                self.button_light.draw_button(self.screen)
+
+                if self.playing_memory:
+                    self.LED_OFF1.draw_switch(self.screen)
+                    self.LED_OFF2.draw_switch(self.screen)
+                    self.LED_OFF3.draw_switch(self.screen)
+                    self.LED_OFF4.draw_switch(self.screen)
+                else:
+                    if self.light_state == 0:
+                        self.LED_OFF1.draw_switch(self.screen)
+                        self.LED_OFF2.draw_switch(self.screen)
+                        self.LED_OFF3.draw_switch(self.screen)
+                        self.LED_OFF4.draw_switch(self.screen)
+                    elif self.light_state == 1:
+                        self.LED_OFF1.draw_switch(self.screen)
+                        self.LED_OFF2.draw_switch(self.screen)
+                        self.LED_ON3.draw_switch(self.screen)
+                        self.LED_OFF4.draw_switch(self.screen)
+                    elif self.light_state == 2:
+                        self.LED_OFF1.draw_switch(self.screen)
+                        self.LED_ON2.draw_switch(self.screen)
+                        self.LED_ON3.draw_switch(self.screen)
+                        self.LED_OFF4.draw_switch(self.screen)
+                    elif self.light_state == 3:
+                        self.LED_OFF1.draw_switch(self.screen)
+                        self.LED_ON2.draw_switch(self.screen)
+                        self.LED_ON3.draw_switch(self.screen)
+                        self.LED_ON4.draw_switch(self.screen)
+                    elif self.light_state == 4:
+                        self.LED_ON1.draw_switch(self.screen)
+                        self.LED_ON2.draw_switch(self.screen)
+                        self.LED_ON3.draw_switch(self.screen)
+                        self.LED_ON4.draw_switch(self.screen)
+                    else:
+                        self.LED_ON1.draw_switch(self.screen)
+                        self.LED_ON2.draw_switch(self.screen)
+                        self.LED_ON3.draw_switch(self.screen)
+                        self.LED_ON4.draw_switch(self.screen)
+
 
     def run(self):
         # GPIO.add_event_detec(self.button_pin, GPIO.FALLING, callback=self.button_pressed, bouncetime=300)
@@ -326,7 +487,7 @@ class App:
         hit = 0
         while self.running:
             if self.call_state == "menu":
-                GPIO.cleanup()
+                #GPIO.cleanup()
                 self.menu_event()
                 pygame.display.update()
 
@@ -342,12 +503,22 @@ class App:
                 self.led_event()
             elif self.call_state == "Memory Game":
                 if self.call_in_game == "start":
-                    self.playing = True
-                if self.call_in_game == "restart":
+                    self.change_leds()
+                elif self.call_in_game == "restart":
                     self.restart_event(0)
-                if self.call_in_game == "move":
+                elif self.call_in_game == "move":
                     self.move_ball()
-                    print([self.ball.pos, self.ball.center, self.ball.image_rect.center])
+                elif self.call_in_game == "next":
+                    self.playing_memory_level += 1
+                    if self.playing_memory_level > 2:
+                        self.playing_memory_level = 2
+                    self.call_in_game = ""
+                elif self.call_in_game == "back":
+                    self.playing_memory_level -= 1
+                    self.call_in_game = ""
+                elif self.call_in_game == "light":
+                    self.call_in_game = ""
+                    self.light_state += 1
 
                 self.cup_draw()
             elif self.call_state == "Basketball":
@@ -364,7 +535,7 @@ class App:
                 self.call_state = "menu"
             else:
                 print("quit")
-                GPIO.cleanup()
+                #GPIO.cleanup()
                 self.running = False
 
             # update the display
