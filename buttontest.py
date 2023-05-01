@@ -9,7 +9,7 @@ def button_callback(channel):
     if channel == 17:
         button_name = "Right"
         #GPIO.output(led_pin, GPIO.HIGH)
-        #print("led on")
+        print("led on")
     elif channel == 23:
         button_name = "Down"
     elif channel == 24:
