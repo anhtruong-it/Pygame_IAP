@@ -68,6 +68,7 @@ class App:
         # create LEDs on memory game section
         self.playing_memory = True
         self.playing_memory_level = 0
+        self.playing_led_level = 0
         self.LED_ON1 = SwitchAndLEDs([75, 300], 50, (75, 300), (0, 255, 0), self.LEDs)
         self.LED_ON2 = SwitchAndLEDs([200, 300], 50, (200, 300), (0, 255, 0), self.LEDs)
         self.LED_ON3 = SwitchAndLEDs([350, 300], 50, (350, 300), (0, 255, 0), self.LEDs)
@@ -243,10 +244,16 @@ class App:
         for event in pygame.event.get():
             self.button_return.handle_event(event)
             self.button_restart.handle_event(event)
+            self.button_next.handle_event(event)
+            self.button_back.handle_event(event)
             event_quit(event)
 
         # clear the screen with the background color
         self.screen.fill(self.background_color)
+
+        self.button_next.draw_button(self.screen)
+        # draw back button
+        self.button_back.draw_button(self.screen)
 
         # draw return button
         self.button_return.draw_button(self.screen)
@@ -254,44 +261,87 @@ class App:
         # draw restart button
         self.button_restart.draw_button(self.screen)
 
-        # draw circle
-        keys_pressed = pygame.key.get_pressed()
-        self.circle.update(keys_pressed)
-        circle = self.circle.draw(self.screen)
+        if self.playing_led_level == 0:
+            # draw circle
+            keys_pressed = pygame.key.get_pressed()
+            self.circle.update(keys_pressed)
+            circle = self.circle.draw(self.screen)
 
-        # draw switch OFF
-        switch_OFF = self.switch_OFF.draw_switch(self.screen)
+            # draw switch OFF
+            switch_OFF = self.switch_OFF.draw_switch(self.screen)
 
-        # draw LED OFF
-        LED_OFF = self.LED_OFF.draw_switch(self.screen)
+            # draw LED OFF
+            LED_OFF = self.LED_OFF.draw_switch(self.screen)
 
-        # Set pin numbering mode to BCM
-        #GPIO.setmode(GPIO.BCM)
+            # Set pin numbering mode to BCM
+            # GPIO.setmode(GPIO.BCM)
 
-        # Set up GPIO pins for output
-        #GPIO.setup(18, GPIO.OUT)
-        #GPIO.setup(25, GPIO.IN)
+            # Set up GPIO pins for output
+            # GPIO.setup(18, GPIO.OUT)
+            # GPIO.setup(25, GPIO.IN)
 
-        # Set the output value to high (0.0V)
-        #GPIO.output(18, GPIO.LOW)
+            # Set the output value to high (0.0V)
+            # GPIO.output(18, GPIO.LOW)
 
-        if circle.colliderect(switch_OFF):
-            # draw switch ON
-            switch_ON = self.switch_ON.draw_switch(self.screen)
-            LED_ON = self.LED_ON.draw_switch(self.screen)
-            # Set the output value to high (3.3V)
-           #GPIO.output(18, GPIO.HIGH)
+            if circle.colliderect(switch_OFF):
+                # draw switch ON
+                switch_ON = self.switch_ON.draw_switch(self.screen)
+                LED_ON = self.LED_ON.draw_switch(self.screen)
+                # Set the output value to high (3.3V)
+            # GPIO.output(18, GPIO.HIGH)
 
-        # if GPIO.input(25) == GPIO.HIGH:
+            # if GPIO.input(25) == GPIO.HIGH:
+            #     # Set the output value to high (3.3V)
+            #     #GPIO.output(18, GPIO.HIGH)
+
+            if self.circle.keys:
+                switch_ON = self.switch_ON.draw_switch(self.screen)
+                LED_ON = self.LED_ON.draw_switch(self.screen)
+                # GPIO.output(self.led_pin, GPIO.HIGH)
+
+            self.hit_leds(circle, LED_OFF)
+        elif self.playing_led_level == 1:
+            # draw LED OFF
+            LED_OFF = self.LED_OFF.draw_switch(self.screen)
+
+        # # draw circle
+        # keys_pressed = pygame.key.get_pressed()
+        # self.circle.update(keys_pressed)
+        # circle = self.circle.draw(self.screen)
+        #
+        # # draw switch OFF
+        # switch_OFF = self.switch_OFF.draw_switch(self.screen)
+        #
+        # # draw LED OFF
+        # LED_OFF = self.LED_OFF.draw_switch(self.screen)
+        #
+        # # Set pin numbering mode to BCM
+        # #GPIO.setmode(GPIO.BCM)
+        #
+        # # Set up GPIO pins for output
+        # #GPIO.setup(18, GPIO.OUT)
+        # #GPIO.setup(25, GPIO.IN)
+        #
+        # # Set the output value to high (0.0V)
+        # #GPIO.output(18, GPIO.LOW)
+        #
+        # if circle.colliderect(switch_OFF):
+        #     # draw switch ON
+        #     switch_ON = self.switch_ON.draw_switch(self.screen)
+        #     LED_ON = self.LED_ON.draw_switch(self.screen)
         #     # Set the output value to high (3.3V)
-        #     #GPIO.output(18, GPIO.HIGH)
-
-        if self.circle.keys:
-            switch_ON = self.switch_ON.draw_switch(self.screen)
-            LED_ON = self.LED_ON.draw_switch(self.screen)
-            # GPIO.output(self.led_pin, GPIO.HIGH)
-
-        self.hit_leds(circle, LED_OFF)
+        #    #GPIO.output(18, GPIO.HIGH)
+        #
+        # # if GPIO.input(25) == GPIO.HIGH:
+        # #     # Set the output value to high (3.3V)
+        # #     #GPIO.output(18, GPIO.HIGH)
+        #
+        # if self.circle.keys:
+        #     switch_ON = self.switch_ON.draw_switch(self.screen)
+        #     LED_ON = self.LED_ON.draw_switch(self.screen)
+        #     # GPIO.output(self.led_pin, GPIO.HIGH)
+        #
+        # self.hit_leds(circle, LED_OFF)
 
         pygame.display.update()
 
@@ -500,6 +550,18 @@ class App:
             elif self.call_state == "LEDs":
                 if self.call_in_game == "restart":
                     self.restart_event(hit)
+                elif self.call_in_game == "next":
+                    self.playing_led_level += 1
+                    if self.playing_led_level > 1:
+                        self.playing_led_level = 1
+                    print(self.playing_led_level)
+                    self.call_in_game = ""
+                elif self.call_in_game == "back":
+                    self.playing_led_level -= 1
+                    if self.playing_led_level < 0:
+                        self.playing_led_level = 0
+                    print(self.playing_led_level)
+                    self.call_in_game = ""
                 self.led_event()
             elif self.call_state == "Memory Game":
                 if self.call_in_game == "start":

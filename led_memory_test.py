@@ -32,16 +32,13 @@ while True:
 	new_button_state_3 = GPIO.input(button_pin[3])
 	if count < 4:
 		if not state:
-			print("K")
 			GPIO.output(led_pin[0], GPIO.HIGH)
 			GPIO.output(led_pin[1], GPIO.HIGH)
 			GPIO.output(led_pin[2], GPIO.HIGH)
 			GPIO.output(led_pin[3], GPIO.HIGH)
-			
-		
+
 		if new_button_state_0 == False and button_state_0 == True:
 			count_0 += 1
-			
 			state = True
 			print("Button pressed {} time".format(count_0))
 			if count_0 % 2 != 0:
